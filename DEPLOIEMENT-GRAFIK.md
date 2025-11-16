@@ -201,6 +201,19 @@ User: napo_admin
 Password: Superman13**
 ```
 
+**⚠️ NOTE IMPORTANTE** : Si vous obtenez une erreur "Access denied for user 'napo_admin'" :
+1. Connectez-vous au VPS via SSH
+2. Exécutez le fichier `fix_db_permissions.sql` :
+```bash
+mysql -u root -p'9BvgCl9ewttgcc' < /home/napopizza.lv/public_html/grafik/fix_db_permissions.sql
+```
+Ou copiez/collez ces commandes SQL en tant que root :
+```sql
+CREATE USER IF NOT EXISTS 'napo_admin'@'localhost' IDENTIFIED BY 'Superman13**';
+GRANT ALL PRIVILEGES ON napo_grafik.* TO 'napo_admin'@'localhost';
+FLUSH PRIVILEGES;
+```
+
 ### VPS (via SSH)
 ```
 Host: 195.35.56.221

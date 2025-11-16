@@ -1,0 +1,27 @@
+# Grafik - Fichiers à ignorer
+
+# Logs
+logs/*.log
+*.log
+
+# Fichiers temporaires
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Données sensibles (à ne jamais commit)
+# config.php est inclus car déjà commité
+# mais attention aux modifications futures
+
