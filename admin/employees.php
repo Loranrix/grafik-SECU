@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Employé créé avec succès';
         }
     } elseif ($action === 'update') {
-        $id = intval($_POST['id']);
+        $id = trim($_POST['id']); // Garder comme string pour Firebase
         $first_name = trim($_POST['first_name']);
         $last_name = trim($_POST['last_name']);
         $phone = trim($_POST['phone']);
@@ -46,18 +46,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($employeeModel->pinExists($pin, $id)) {
             $error = 'Ce PIN est déjà utilisé';
         } else {
-            $employeeModel->update($id, $first_name, $last_name, $phone, $pin, $employee_type);
-            $message = 'Employé modifié avec succès';
+            $result = $employeeModel->update($id, $first_name, $last_name, $phone, $pin, $employee_type);
+            if ($result) {
+                $message = 'Employé modifié avec succès';
+            } else {
+                $error = 'Erreur lors de la modification de l\'employé';
+            }
         }
     } elseif ($action === 'toggle_active') {
-        $id = intval($_POST['id']);
+        $id = trim($_POST['id']); // Garder comme string pour Firebase
         $is_active = intval($_POST['is_active']);
-        $employeeModel->setActive($id, $is_active);
-        $message = 'Statut modifié avec succès';
+        $result = $employeeModel->setActive($id, $is_active);
+        if ($result) {
+            $message = 'Statut modifié avec succès';
+        } else {
+            $error = 'Erreur lors de la modification du statut';
+        }
     } elseif ($action === 'delete') {
-        $id = intval($_POST['id']);
-        $employeeModel->delete($id);
-        $message = 'Employé supprimé avec succès';
+        $id = trim($_POST['id']); // Garder comme string pour Firebase
+        $result = $employeeModel->delete($id);
+        if ($result) {
+            $message = 'Employé supprimé avec succès';
+        } else {
+            $error = 'Erreur lors de la suppression de l\'employé';
+        }
     }
 }
 
