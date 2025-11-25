@@ -187,10 +187,10 @@ foreach ($all_punches_by_employee as $emp_id => $data) {
     
     <!-- Sélecteurs de période et employé -->
     <div class="card">
-        <form method="GET" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+        <form method="GET" id="filterForm" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
             <div style="display: flex; gap: 10px; align-items: center;">
                 <label for="period" style="font-weight: 600;">Période :</label>
-                <select id="period" name="period" onchange="updateDateInput()" style="padding: 10px; border: 2px solid #ddd; border-radius: 8px;">
+                <select id="period" name="period" onchange="updateDateInput(); autoSubmit();" style="padding: 10px; border: 2px solid #ddd; border-radius: 8px;">
                     <option value="day" <?= $period_type === 'day' ? 'selected' : '' ?>>Jour</option>
                     <option value="week" <?= $period_type === 'week' ? 'selected' : '' ?>>Semaine</option>
                     <option value="month" <?= $period_type === 'month' ? 'selected' : '' ?>>Mois</option>
@@ -199,12 +199,12 @@ foreach ($all_punches_by_employee as $emp_id => $data) {
             
             <div style="display: flex; gap: 10px; align-items: center;">
                 <label for="date" style="font-weight: 600;">Date :</label>
-                <input type="date" id="date" name="date" value="<?= $selected_date ?>" style="padding: 10px; border: 2px solid #ddd; border-radius: 8px;">
+                <input type="date" id="date" name="date" value="<?= $selected_date ?>" onchange="autoSubmit();" style="padding: 10px; border: 2px solid #ddd; border-radius: 8px;">
             </div>
             
             <div style="display: flex; gap: 10px; align-items: center;">
                 <label for="employee" style="font-weight: 600;">Employé :</label>
-                <select id="employee" name="employee" style="padding: 10px; border: 2px solid #ddd; border-radius: 8px; min-width: 200px;">
+                <select id="employee" name="employee" onchange="autoSubmit();" style="padding: 10px; border: 2px solid #ddd; border-radius: 8px; min-width: 200px;">
                     <option value="">Tous les employés</option>
                     <?php foreach ($employees as $emp): ?>
                     <option value="<?= $emp['id'] ?>" <?= $selected_employee === $emp['id'] ? 'selected' : '' ?>>
@@ -417,20 +417,28 @@ foreach ($all_punches_by_employee as $emp_id => $data) {
 function updateDateInput() {
     const period = document.getElementById('period').value;
     const dateInput = document.getElementById('date');
+    const currentDate = new Date(dateInput.value || new Date());
     
     if (period === 'month') {
-        // Pour le mois, on affiche le premier jour du mois
-        const today = new Date();
-        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        // Pour le mois, on affiche le premier jour du mois sélectionné
+        const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
         dateInput.value = firstDay.toISOString().split('T')[0];
     } else if (period === 'week') {
-        // Pour la semaine, on affiche le lundi de la semaine en cours
-        const today = new Date();
-        const day = today.getDay();
-        const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Ajuster pour lundi
-        const monday = new Date(today.setDate(diff));
+        // Pour la semaine, on affiche le lundi de la semaine de la date sélectionnée
+        const day = currentDate.getDay();
+        const diff = currentDate.getDate() - day + (day === 0 ? -6 : 1); // Ajuster pour lundi
+        const monday = new Date(currentDate);
+        monday.setDate(diff);
         dateInput.value = monday.toISOString().split('T')[0];
     }
+}
+
+function autoSubmit() {
+    // Soumettre automatiquement le formulaire après un court délai
+    clearTimeout(window.autoSubmitTimeout);
+    window.autoSubmitTimeout = setTimeout(function() {
+        document.getElementById('filterForm').submit();
+    }, 300);
 }
 
 function openAddPunchModal() {
