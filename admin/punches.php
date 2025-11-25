@@ -219,7 +219,7 @@ foreach ($all_punches_by_employee as $emp_id => $data) {
         </form>
     </div>
     
-    <?php if (count($hours_by_employee) > 0 && array_sum(array_column($hours_by_employee, 'real_hours')) > 0): ?>
+    <?php if (count($hours_by_employee) > 0): ?>
     <div class="card">
         <h2>
             <?php 
