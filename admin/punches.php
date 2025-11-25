@@ -136,20 +136,28 @@ foreach ($all_punches_by_employee as $emp_id => $data) {
     
     foreach ($punches as $punch) {
         if ($punch['punch_type'] === 'in') {
+            // Si on a déjà un "in" en attente, on l'ignore (pointage orphelin)
+            if ($in_time !== null) {
+                // On ignore l'ancien "in" et on prend le nouveau
+            }
             $in_time = strtotime($punch['punch_datetime']);
             $in_time_rounded = strtotime(roundUpQuarter($punch['punch_datetime']));
-        } elseif ($punch['punch_type'] === 'out' && $in_time !== null) {
-            $out_time = strtotime($punch['punch_datetime']);
-            $out_time_rounded = strtotime(roundDownQuarter($punch['punch_datetime']));
-            
-            // Heures réelles
-            $real_hours += ($out_time - $in_time) / 3600;
-            
-            // Heures arrondies
-            $rounded_hours += ($out_time_rounded - $in_time_rounded) / 3600;
-            
-            $in_time = null;
-            $in_time_rounded = null;
+        } elseif ($punch['punch_type'] === 'out') {
+            if ($in_time !== null) {
+                // On a un "in" précédent, on calcule les heures
+                $out_time = strtotime($punch['punch_datetime']);
+                $out_time_rounded = strtotime(roundDownQuarter($punch['punch_datetime']));
+                
+                // Heures réelles
+                $real_hours += ($out_time - $in_time) / 3600;
+                
+                // Heures arrondies
+                $rounded_hours += ($out_time_rounded - $in_time_rounded) / 3600;
+                
+                $in_time = null;
+                $in_time_rounded = null;
+            }
+            // Si pas de "in" précédent, on ignore ce "out" (pointage orphelin)
         }
     }
     
