@@ -17,10 +17,22 @@ $message = '';
 $error = '';
 
 // Fonction pour arrondir au 1/4 d'heure supérieur (pour arrivée)
-function roundUpQuarter($datetime) {
+function roundUpQuarter($datetime, $employee_type = null) {
     $timestamp = strtotime($datetime);
     $minutes = (int)date('i', $timestamp);
     $hours = (int)date('H', $timestamp);
+    
+    // Règle spéciale pour les employés Bar
+    if ($employee_type === 'Bar') {
+        $time_in_minutes = $hours * 60 + $minutes;
+        $limit_1145 = 11 * 60 + 45; // 11:45 en minutes
+        
+        // Si avant 11:45, mettre 11:45
+        if ($time_in_minutes < $limit_1145) {
+            return date('Y-m-d H:i:s', mktime(11, 45, 0, date('m', $timestamp), date('d', $timestamp), date('Y', $timestamp)));
+        }
+        // Sinon, arrondir au quart supérieur normalement
+    }
     
     // Arrondir au quart supérieur
     $rounded_minutes = ceil($minutes / 15) * 15;
@@ -134,6 +146,8 @@ foreach ($all_punches_by_employee as $emp_id => $data) {
     $in_time = null;
     $in_time_rounded = null;
     
+    $employee_type = $emp['employee_type'] ?? 'Autre';
+    
     foreach ($punches as $punch) {
         if ($punch['punch_type'] === 'in') {
             // Si on a déjà un "in" en attente, on l'ignore (pointage orphelin)
@@ -141,7 +155,7 @@ foreach ($all_punches_by_employee as $emp_id => $data) {
                 // On ignore l'ancien "in" et on prend le nouveau
             }
             $in_time = strtotime($punch['punch_datetime']);
-            $in_time_rounded = strtotime(roundUpQuarter($punch['punch_datetime']));
+            $in_time_rounded = strtotime(roundUpQuarter($punch['punch_datetime'], $employee_type));
         } elseif ($punch['punch_type'] === 'out') {
             if ($in_time !== null) {
                 // On a un "in" précédent, on calcule les heures
@@ -297,7 +311,8 @@ foreach ($all_punches_by_employee as $emp_id => $data) {
                     <td>
                         <?php 
                         if ($punch['punch_type'] === 'in') {
-                            $rounded = roundUpQuarter($punch['punch_datetime']);
+                            $employee_type = $emp['employee_type'] ?? 'Autre';
+                            $rounded = roundUpQuarter($punch['punch_datetime'], $employee_type);
                             echo '<strong style="color: #27ae60;">' . date('H:i', strtotime($rounded)) . '</strong>';
                         } else {
                             $rounded = roundDownQuarter($punch['punch_datetime']);
