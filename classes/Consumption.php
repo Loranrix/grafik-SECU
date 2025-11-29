@@ -23,7 +23,15 @@ class Consumption {
     }
 
     /**
-     * Compter les consommations gratuites du jour pour un employé
+     * Vérifier si un item est une boisson vraiment gratuite la première fois (exclut Dzēriens)
+     */
+    private function isTrulyFreeDrink($item_name) {
+        $truly_free_drinks = ['Tēja', 'Kafija', 'Kafija ar pienu'];
+        return in_array($item_name, $truly_free_drinks);
+    }
+
+    /**
+     * Compter les consommations gratuites du jour pour un employé (exclut Dzēriens)
      */
     public function countFreeDrinksToday($employee_id) {
         $today = date('Y-m-d');
@@ -31,7 +39,7 @@ class Consumption {
         
         $count = 0;
         foreach ($consumptions as $consumption) {
-            if ($this->isFreeDrink($consumption['item_name'] ?? '')) {
+            if ($this->isTrulyFreeDrink($consumption['item_name'] ?? '')) {
                 $count++;
             }
         }
@@ -48,15 +56,22 @@ class Consumption {
         
         // Vérifier si c'est une boisson gratuite
         $is_free_drink = $this->isFreeDrink($item_name);
+        $is_truly_free_drink = $this->isTrulyFreeDrink($item_name);
         $free_drinks_count = $this->countFreeDrinksToday($employee_id);
         
-        // Si c'est une boisson gratuite et c'est le premier du jour → gratuit
-        if ($is_free_drink && $free_drinks_count === 0) {
-            // Première boisson gratuite : forcer à 0 même si un prix a été fourni
+        // Dzēriens est toujours payant, même la première fois
+        if ($item_name === 'Dzēriens') {
+            // Dzēriens : toujours payant avec -50%
+            if ($original_price <= 0) {
+                return false;
+            }
+            $discounted_price = $original_price * (1 - $discount_percent / 100);
+        } elseif ($is_truly_free_drink && $free_drinks_count === 0) {
+            // Première boisson vraiment gratuite (Tēja, Kafija, Kafija ar pienu) : forcer à 0
             $original_price = 0;
             $discounted_price = 0;
             $discount_percent = 0;
-        } elseif ($is_free_drink && $free_drinks_count >= 1) {
+        } elseif ($is_truly_free_drink && $free_drinks_count >= 1) {
             // Deuxième boisson gratuite ou plus : doit être payante avec -50%
             // Le prix DOIT être fourni et > 0 (vérifié avant dans employee/consumption.php)
             if ($original_price <= 0) {

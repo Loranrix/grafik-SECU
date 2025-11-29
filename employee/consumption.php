@@ -33,17 +33,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $free_drinks = ['Tēja', 'Kafija', 'Kafija ar pienu', 'Dzēriens'];
         
         if (!empty($free_drink) && in_array($free_drink, $free_drinks)) {
-            // C'est une boisson gratuite
+            // C'est une boisson
             $item_name = $free_drink;
-            $free_drinks_count = $consumptionModel->countFreeDrinksToday($employee_id);
             
-            // Si c'est le premier → gratuit, sinon demander le prix
-            if ($free_drinks_count === 0) {
-                $original_price = 0;
-            } else {
+            // Dzēriens est toujours payant
+            if ($free_drink === 'Dzēriens') {
                 $original_price = floatval($_POST['original_price'] ?? 0);
                 if ($original_price <= 0) {
-                    $error = 'Lūdzu, ievadiet derīgu cenu (no otrās reizes jāmaksā)';
+                    $error = 'Lūdzu, ievadiet derīgu cenu (Dzēriens vienmēr ir maksas)';
+                }
+            } else {
+                // Autres boissons (Tēja, Kafija, Kafija ar pienu)
+                $free_drinks_count = $consumptionModel->countFreeDrinksToday($employee_id);
+                
+                // Si c'est le premier → gratuit, sinon demander le prix
+                if ($free_drinks_count === 0) {
+                    $original_price = 0;
+                } else {
+                    $original_price = floatval($_POST['original_price'] ?? 0);
+                    if ($original_price <= 0) {
+                        $error = 'Lūdzu, ievadiet derīgu cenu (no otrās reizes jāmaksā)';
+                    }
                 }
             }
             
@@ -200,30 +210,42 @@ $free_drinks_count_today = $consumptionModel->countFreeDrinksToday($employee_id)
             }
             
             if (freeDrinkSelected) {
-                // Une boisson gratuite est sélectionnée (et les champs sont vides)
+                // Une boisson est sélectionnée (et les champs sont vides)
                 itemNameInput.required = false;
                 
-                // Vérifier combien de boissons gratuites ont déjà été consommées aujourd'hui
-                const freeDrinksCount = <?= $free_drinks_count_today ?>;
                 const priceGroup = document.getElementById('priceGroup');
                 const priceHelp = document.getElementById('priceHelp');
                 
-                if (freeDrinksCount >= 1) {
-                    // C'est la deuxième fois ou plus, demander le prix
+                // Dzēriens est toujours payant avec -50%
+                if (freeDrinkSelected.value === 'Dzēriens') {
                     priceGroup.style.display = 'block';
                     priceInput.required = true;
                     priceInput.min = "0.01";
                     priceInput.value = '';
                     priceInput.style.border = '2px solid #e74c3c';
-                    priceHelp.textContent = '⚠️ No otrās reizes jāmaksā! Lūdzu, ievadiet cenu.';
+                    priceHelp.textContent = '⚠️ Dzēriens vienmēr ir maksas ar 50% atlaidi. Lūdzu, ievadiet cenu.';
                     priceHelp.style.color = '#e74c3c';
                 } else {
-                    // Première fois, gratuit
-                    priceGroup.style.display = 'none';
-                    priceInput.required = false;
-                    priceInput.value = '0';
-                    priceInput.min = "0";
-                    priceInput.style.border = '';
+                    // Autres boissons (Tēja, Kafija, Kafija ar pienu)
+                    const freeDrinksCount = <?= $free_drinks_count_today ?>;
+                    
+                    if (freeDrinksCount >= 1) {
+                        // C'est la deuxième fois ou plus, demander le prix
+                        priceGroup.style.display = 'block';
+                        priceInput.required = true;
+                        priceInput.min = "0.01";
+                        priceInput.value = '';
+                        priceInput.style.border = '2px solid #e74c3c';
+                        priceHelp.textContent = '⚠️ No otrās reizes jāmaksā! Lūdzu, ievadiet cenu.';
+                        priceHelp.style.color = '#e74c3c';
+                    } else {
+                        // Première fois, gratuit
+                        priceGroup.style.display = 'none';
+                        priceInput.required = false;
+                        priceInput.value = '0';
+                        priceInput.min = "0";
+                        priceInput.style.border = '';
+                    }
                 }
             } else {
                 // Aucune boisson gratuite sélectionnée, formulaire normal
@@ -269,15 +291,26 @@ $free_drinks_count_today = $consumptionModel->countFreeDrinksToday($employee_id)
             
             // Si une boisson est sélectionnée, on peut soumettre (le prix sera géré côté serveur)
             if (freeDrinkSelected) {
-                const freeDrinksCount = <?= $free_drinks_count_today ?>;
-                // Si c'est la 2ème boisson ou plus, le prix est obligatoire
-                if (freeDrinksCount >= 1 && (priceInput.value.trim() === '' || parseFloat(priceInput.value) <= 0)) {
-                    e.preventDefault();
-                    alert('Lūdzu, ievadiet cenu (no otrās reizes jāmaksā)');
-                    priceInput.focus();
-                    return false;
+                // Dzēriens est toujours payant
+                if (freeDrinkSelected.value === 'Dzēriens') {
+                    if (priceInput.value.trim() === '' || parseFloat(priceInput.value) <= 0) {
+                        e.preventDefault();
+                        alert('Lūdzu, ievadiet cenu (Dzēriens vienmēr ir maksas ar 50% atlaidi)');
+                        priceInput.focus();
+                        return false;
+                    }
+                } else {
+                    // Autres boissons (Tēja, Kafija, Kafija ar pienu)
+                    const freeDrinksCount = <?= $free_drinks_count_today ?>;
+                    // Si c'est la 2ème boisson ou plus, le prix est obligatoire
+                    if (freeDrinksCount >= 1 && (priceInput.value.trim() === '' || parseFloat(priceInput.value) <= 0)) {
+                        e.preventDefault();
+                        alert('Lūdzu, ievadiet cenu (no otrās reizes jāmaksā)');
+                        priceInput.focus();
+                        return false;
+                    }
                 }
-                // Sinon, on peut soumettre (première boisson = gratuit)
+                // Sinon, on peut soumettre (première boisson = gratuit, sauf Dzēriens)
                 return true;
             }
             
