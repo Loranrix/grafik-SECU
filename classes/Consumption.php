@@ -15,10 +15,10 @@ class Consumption {
     }
 
     /**
-     * Vérifier si un item est une boisson gratuite (Tea, Coffee, Coffee with milk)
+     * Vérifier si un item est une boisson gratuite (Tea, Coffee, Coffee with milk, Drink)
      */
     private function isFreeDrink($item_name) {
-        $free_drinks = ['Tēja', 'Kafija', 'Kafija ar pienu'];
+        $free_drinks = ['Tēja', 'Kafija', 'Kafija ar pienu', 'Dzēriens'];
         return in_array($item_name, $free_drinks);
     }
 

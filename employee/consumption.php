@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'add') {
         // Vérifier si c'est une boisson gratuite sélectionnée
         $free_drink = $_POST['free_drink'] ?? '';
-        $free_drinks = ['Tēja', 'Kafija', 'Kafija ar pienu'];
+        $free_drinks = ['Tēja', 'Kafija', 'Kafija ar pienu', 'Dzēriens'];
         
         if (!empty($free_drink) && in_array($free_drink, $free_drinks)) {
             // C'est une boisson gratuite
@@ -163,6 +163,10 @@ $free_drinks_count_today = $consumptionModel->countFreeDrinksToday($employee_id)
                         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: #f9f9f9;">
                             <input type="radio" name="free_drink" value="Kafija ar pienu" onchange="handleFreeDrinkChange()">
                             <span style="font-size: 16px;">☕ Kafija ar pienu</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+                            <input type="radio" name="free_drink" value="Dzēriens" onchange="handleFreeDrinkChange()">
+                            <span style="font-size: 16px;">🥤 Dzēriens</span>
                         </label>
                     </div>
                     <small style="color: #7f8c8d; display: block; margin-top: 10px;">
