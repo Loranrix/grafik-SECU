@@ -110,4 +110,31 @@ class Consumption {
         
         return $consumptions;
     }
+
+    /**
+     * Récupérer les boissons du jour pour un employé (pour vérifier les gratuites)
+     */
+    public function getTodayDrinksForEmployee($employee_id) {
+        $today_consumptions = $this->getTodayForEmployee($employee_id);
+        
+        $drinks = [
+            'tea' => 0,
+            'coffee' => 0,
+            'other' => 0
+        ];
+        
+        foreach ($today_consumptions as $cons) {
+            $item_name = strtolower($cons['item_name'] ?? '');
+            
+            if (strpos($item_name, 'tēja') !== false || strpos($item_name, 'tea') !== false) {
+                $drinks['tea']++;
+            } elseif (strpos($item_name, 'kafija') !== false || strpos($item_name, 'coffee') !== false || strpos($item_name, 'café') !== false) {
+                $drinks['coffee']++;
+            } elseif (strpos($item_name, 'cits') !== false || strpos($item_name, 'other') !== false) {
+                $drinks['other']++;
+            }
+        }
+        
+        return $drinks;
+    }
 }
