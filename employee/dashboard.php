@@ -33,10 +33,11 @@ $week_end = date('Y-m-d', strtotime('sunday this week'));
 $month_start = date('Y-m-01');
 $month_end = date('Y-m-t');
 
-$hours_today = $punchModel->calculateHours($employee_id, $today);
-$hours_yesterday = $punchModel->calculateHours($employee_id, $yesterday);
-$hours_week = $punchModel->calculateHoursRange($employee_id, $week_start, $week_end);
-$hours_month = $punchModel->calculateHoursRange($employee_id, $month_start, $month_end);
+// Calculer les heures payées (avec arrondi) pour l'affichage dans le dashboard
+$hours_today = $punchModel->calculatePaidHours($employee_id, $today);
+$hours_yesterday = $punchModel->calculatePaidHours($employee_id, $yesterday);
+$hours_week = $punchModel->calculatePaidHoursRange($employee_id, $week_start, $week_end);
+$hours_month = $punchModel->calculatePaidHoursRange($employee_id, $month_start, $month_end);
 
 // Récupérer le planning du mois
 $shifts = $shiftModel->getByEmployeeMonth($employee_id, date('Y'), date('n'));
@@ -160,12 +161,12 @@ $punches = $punchModel->getByEmployeeDateRange($employee_id, $month_start, $mont
                             <?php endif; ?>
                             
                             <?php 
-                            // Calculer les heures du jour
-                            $day_hours = $punchModel->calculateHours($employee_id, $date);
+                            // Calculer les heures payées du jour (avec arrondi)
+                            $day_hours = $punchModel->calculatePaidHours($employee_id, $date);
                             if ($day_hours > 0):
                             ?>
                                 <div class="punch-hours">
-                                    Total: <strong><?= number_format($day_hours, 1) ?>h</strong>
+                                    Stundas strādātas: <strong><?= number_format($day_hours, 1) ?>h</strong>
                                 </div>
                             <?php endif; ?>
                         </div>

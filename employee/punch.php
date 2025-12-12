@@ -43,8 +43,22 @@ $boxes_count = isset($_GET['boxes']) ? intval($_GET['boxes']) : null;
 
 // Enregistrer le pointage
 $error_message = null;
+$warning_message = null;
 $punch_id = null;
 try {
+    // Vérifier d'abord s'il y a un oubli de scan avant d'enregistrer
+    $lastPunch = $punchModel->getLastPunch($employee_id);
+    if ($lastPunch) {
+        $last_type = $lastPunch['punch_type'] ?? '';
+        if ($type === 'in' && $last_type === 'in') {
+            $warning_message = "⚠️ Warning: You are registering arrival, but the previous departure was not registered. Please contact Loran on WhatsApp about the forgotten scan.";
+        } elseif ($type === 'out' && $last_type === 'out') {
+            $warning_message = "⚠️ Warning: You are registering departure, but the previous arrival was not registered. Please contact Loran on WhatsApp about the forgotten scan.";
+        }
+    } elseif ($type === 'out') {
+        $warning_message = "⚠️ Warning: You are registering departure without a previous arrival. Please contact Loran on WhatsApp about the forgotten scan.";
+    }
+    
     $punch_id = $punchModel->record($employee_id, $type, null, $boxes_count);
     $punch_datetime = date('Y-m-d H:i:s');
     
@@ -127,6 +141,12 @@ $type_icon = $type === 'in' ? '✓' : '👋';
             <?= htmlspecialchars($error_message) ?>
         </div>
         <?php else: ?>
+        
+        <?php if ($warning_message): ?>
+        <div class="message warning" style="background: #f39c12; color: white; padding: 20px; border-radius: 15px; margin: 20px 0; font-weight: bold; text-align: center;">
+            <?= htmlspecialchars($warning_message) ?>
+        </div>
+        <?php endif; ?>
         <div class="logo" style="font-size: 72px;"><?= $type_icon ?></div>
         <h1><?= $type_label ?> reģistrēta!</h1>
         

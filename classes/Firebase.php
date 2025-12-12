@@ -225,15 +225,36 @@ class Firebase {
                     if ($punch_date === $date) {
                         // Récupérer les infos de l'employé
                         $employee = $this->getEmployee($employee_id);
+                        
+                        // S'assurer que l'employee_id est bien une string pour la compatibilité
+                        $emp_id_str = (string)$employee_id;
+                        
+                        // S'assurer que les noms sont présents
+                        $first_name = $employee['first_name'] ?? '';
+                        $last_name = $employee['last_name'] ?? '';
+                        
+                        // Si pas de nom, essayer de récupérer depuis tous les employés
+                        if (empty($first_name)) {
+                            $allEmployees = $this->getAllEmployees();
+                            foreach ($allEmployees as $id => $emp) {
+                                if ((string)$id === $emp_id_str || $id == $employee_id) {
+                                    $first_name = $emp['first_name'] ?? '';
+                                    $last_name = $emp['last_name'] ?? '';
+                                    break;
+                                }
+                            }
+                        }
+                        
                         $result[] = [
                             'id' => $key,
-                            'employee_id' => $employee_id,
-                            'first_name' => $employee['first_name'] ?? '',
-                            'last_name' => $employee['last_name'] ?? '',
+                            'employee_id' => $emp_id_str,
+                            'first_name' => $first_name,
+                            'last_name' => $last_name,
                             'punch_type' => $punch['type'] ?? $punch['punch_type'] ?? '',
                             'punch_datetime' => str_replace('T', ' ', $punch_datetime),
                             'shift_id' => $punch['shift_id'] ?? null,
-                            'boxes_count' => $punch['boxes_count'] ?? null
+                            'boxes_count' => $punch['boxes_count'] ?? null,
+                            'firebase_key' => $key // Ajouter la clé Firebase pour référence
                         ];
                     }
                 }
