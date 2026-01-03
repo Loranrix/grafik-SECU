@@ -17,6 +17,9 @@ class Employee {
      * Récupérer tous les employés actifs
      */
     public function getAll($active_only = true) {
+        if (!$this->firebase || !$this->firebase->isConnected()) {
+            return [];
+        }
         $allEmployees = $this->firebase->getAllEmployees();
         $result = [];
         
@@ -42,6 +45,9 @@ class Employee {
      * Récupérer un employé par ID
      */
     public function getById($id) {
+        if (!$this->firebase || !$this->firebase->isConnected()) {
+            return null;
+        }
         $employee = $this->firebase->getEmployee($id);
         if ($employee) {
             $employee['id'] = $id;
@@ -53,6 +59,9 @@ class Employee {
      * Récupérer un employé par PIN
      */
     public function getByPin($pin) {
+        if (!$this->firebase || !$this->firebase->isConnected()) {
+            return null;
+        }
         $allEmployees = $this->firebase->getAllEmployees();
         foreach ($allEmployees as $id => $employee) {
             if (isset($employee['pin']) && $employee['pin'] === $pin &&
@@ -68,6 +77,9 @@ class Employee {
      * Récupérer un employé par QR code
      */
     public function getByQr($qr_code) {
+        if (!$this->firebase || !$this->firebase->isConnected()) {
+            return null;
+        }
         $allEmployees = $this->firebase->getAllEmployees();
         foreach ($allEmployees as $id => $employee) {
             if (isset($employee['qr_code']) && $employee['qr_code'] === $qr_code &&

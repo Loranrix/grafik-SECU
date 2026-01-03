@@ -83,6 +83,10 @@ class Firebase {
      * Sauvegarder un employé dans Firebase
      */
     public function saveEmployee($employee_id, $data) {
+        if (!$this->isConnected) {
+            error_log("Firebase saveEmployee Error: Firebase not connected");
+            return false;
+        }
         try {
             $ref = $this->database->getReference('grafik/employees/' . $employee_id);
             $ref->set($data);
@@ -97,6 +101,9 @@ class Firebase {
      * Récupérer un employé depuis Firebase
      */
     public function getEmployee($employee_id) {
+        if (!$this->isConnected) {
+            return null;
+        }
         try {
             $ref = $this->database->getReference('grafik/employees/' . $employee_id);
             return $ref->getValue();
@@ -110,6 +117,9 @@ class Firebase {
      * Récupérer tous les employés depuis Firebase
      */
     public function getAllEmployees() {
+        if (!$this->isConnected) {
+            return [];
+        }
         try {
             $ref = $this->database->getReference('grafik/employees');
             return $ref->getValue() ?? [];
@@ -123,6 +133,9 @@ class Firebase {
      * Supprimer un employé de Firebase
      */
     public function deleteEmployee($employee_id) {
+        if (!$this->isConnected) {
+            return false;
+        }
         try {
             $ref = $this->database->getReference('grafik/employees/' . $employee_id);
             $ref->remove();
@@ -137,6 +150,9 @@ class Firebase {
      * Sauvegarder un pointage dans Firebase
      */
     public function savePunch($employee_id, $punch_data) {
+        if (!$this->isConnected) {
+            return false;
+        }
         try {
             // Normaliser le format
             $normalized = [
@@ -164,6 +180,9 @@ class Firebase {
      * Récupérer les pointages d'un employé
      */
     public function getPunches($employee_id, $start_date = null, $end_date = null) {
+        if (!$this->isConnected) {
+            return [];
+        }
         try {
             $ref = $this->database->getReference('grafik/punches/' . $employee_id);
             $punches = $ref->getValue() ?? [];
@@ -212,6 +231,9 @@ class Firebase {
      * Récupérer tous les pointages pour une date (tous employés)
      */
     public function getAllPunchesByDate($date) {
+        if (!$this->isConnected) {
+            return [];
+        }
         try {
             $ref = $this->database->getReference('grafik/punches');
             $allPunches = $ref->getValue() ?? [];
@@ -673,6 +695,9 @@ class Firebase {
      * Sauvegarder une consommation dans Firebase
      */
     public function saveConsumption($consumption_id, $data) {
+        if (!$this->isConnected) {
+            return false;
+        }
         try {
             $ref = $this->database->getReference('grafik/consumptions/' . $consumption_id);
             $ref->set($data);
@@ -687,6 +712,9 @@ class Firebase {
      * Récupérer les consommations d'un employé
      */
     public function getConsumptionsForEmployee($employee_id, $limit = 50) {
+        if (!$this->isConnected) {
+            return [];
+        }
         try {
             $ref = $this->database->getReference('grafik/consumptions');
             $allConsumptions = $ref->getValue() ?? [];
@@ -720,6 +748,9 @@ class Firebase {
      * Récupérer les consommations d'un employé pour une période
      */
     public function getConsumptionsForEmployeePeriod($employee_id, $start_date, $end_date) {
+        if (!$this->isConnected) {
+            return [];
+        }
         try {
             $ref = $this->database->getReference('grafik/consumptions');
             $allConsumptions = $ref->getValue() ?? [];
@@ -787,6 +818,9 @@ class Firebase {
      * Récupérer les dernières consommations (pour admin dashboard)
      */
     public function getRecentConsumptions($limit = 10) {
+        if (!$this->isConnected) {
+            return [];
+        }
         try {
             $ref = $this->database->getReference('grafik/consumptions');
             $allConsumptions = $ref->getValue() ?? [];
@@ -1153,6 +1187,9 @@ class Firebase {
      * Sauvegarder un admin dans Firebase
      */
     public function saveAdmin($admin_id, $data) {
+        if (!$this->isConnected) {
+            return false;
+        }
         try {
             $ref = $this->database->getReference('grafik/admins/' . $admin_id);
             $ref->set($data);
@@ -1167,6 +1204,9 @@ class Firebase {
      * Récupérer un admin par username
      */
     public function getAdminByUsername($username) {
+        if (!$this->isConnected) {
+            return null;
+        }
         try {
             $ref = $this->database->getReference('grafik/admins');
             $allAdmins = $ref->getValue() ?? [];
@@ -1188,6 +1228,9 @@ class Firebase {
      * Mettre à jour last_login d'un admin
      */
     public function updateAdminLastLogin($admin_id) {
+        if (!$this->isConnected) {
+            return false;
+        }
         try {
             $ref = $this->database->getReference('grafik/admins/' . $admin_id . '/last_login');
             $ref->set(date('Y-m-d\TH:i:s'));
